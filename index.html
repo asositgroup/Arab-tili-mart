@@ -31,6 +31,63 @@
     <noscript>
         <link rel="stylesheet" href="./css/modal.css" />
     </noscript>
+    <script>
+    // Run before the split-test vendor so redirected pages do not send PageView.
+    (function () {
+        const originalFetch = window.fetch;
+        let requestSeen = false;
+        let decision = null;
+        let counted = false;
+        let skip = false;
+        try {
+            skip = sessionStorage.getItem("__abGuessed") === "1";
+            sessionStorage.removeItem("__abGuessed");
+        } catch (_) {}
+
+        function countPageView() {
+            if (decision !== "stay" || skip || counted || document.visibilityState === "hidden" || typeof fbq !== "function") return;
+            counted = true;
+            fbq("track", "PageView");
+        }
+        window.__trackLandingPageView = countPageView;
+
+        function stay(guessed) {
+            if (decision === "redirect") return;
+            try {
+                if (guessed && decision === null) sessionStorage.setItem("__abGuessed", "1");
+                if (!guessed) sessionStorage.removeItem("__abGuessed");
+            } catch (_) {}
+            decision = "stay";
+            countPageView();
+        }
+
+        window.fetch = function (input) {
+            const url = typeof input === "string" ? input : input && input.url;
+            if (!url || !url.includes("/api/track/assign")) return originalFetch.apply(this, arguments);
+            requestSeen = true;
+            return originalFetch.apply(this, arguments).then(async function (response) {
+                try {
+                    const assignment = response.ok ? await response.clone().json() : null;
+                    if (assignment && assignment.redirect_url && assignment.redirect_url !== location.href) {
+                        decision = "redirect";
+                    } else {
+                        stay(false);
+                    }
+                } catch (_) {
+                    stay(false);
+                }
+                return response;
+            }, function (error) {
+                stay(false);
+                throw error;
+            });
+        };
+
+        setTimeout(function () { if (!requestSeen) stay(true); }, 1600);
+        setTimeout(function () { if (decision === null) stay(true); }, 8000);
+        document.addEventListener("visibilitychange", countPageView);
+    })();
+    </script>
     <script async src="https://spliturltest.asosit.uz/abtest.js" data-site-id="IL_5JIsFXuLQsuj_" data-api-base="https://spliturltest.asosit.uz"></script>
 </head>
 
@@ -63,7 +120,7 @@
                 <p>Darsda <b>Umra Safariga</b> yo'llanma <br> yutib olishingiz mumkin</p>
             </div>
 
-            <a href="https://t.me/+m4PFkSQGeatmNDZi" class="event__btn registerBtn" target="_blank" rel="noopener noreferrer" style="margin-bottom: 24px;">
+            <a href="https://t.me/+vCiNCwrbCB4xOTQy" class="event__btn registerBtn" target="_blank" rel="noopener noreferrer" style="margin-bottom: 24px;">
                 BEPUL QATNASHISH >>>
             </a>
 
@@ -152,32 +209,13 @@
                 </li>
             </ul>
 
-            <a href="https://t.me/+m4PFkSQGeatmNDZi" class="event__btn registerBtn" target="_blank" rel="noopener noreferrer" style="margin-bottom: 50px;">
+            <a href="https://t.me/+vCiNCwrbCB4xOTQy" class="event__btn registerBtn" target="_blank" rel="noopener noreferrer" style="margin-bottom: 50px;">
                 BEPUL QATNASHISH >>>
             </a>
         </div>
 
-        <script defer>
-            document.addEventListener("DOMContentLoaded", (() => { document.querySelectorAll(".registerBtn").forEach((e => { e.addEventListener("click", (() => { "function" == typeof fbq && fbq("track", "CompleteRegistration") })) })) }));
-        </script>
-
-       <!-- Meta Pixel Code -->
-<script defer>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '26550109041292967');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none"
-src="https://www.facebook.com/tr?id=26550109041292967&ev=PageView&noscript=1"
-/></noscript>
-<!-- End Meta Pixel Code -->
+    <script defer src="./tracking.js"></script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=26550109041292967&ev=PageView&noscript=1" alt=""></noscript>
 </body>
 
 </html>
