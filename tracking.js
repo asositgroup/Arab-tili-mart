@@ -1,4 +1,4 @@
-// Meta Pixel for the four landing variants. PageView waits for the split-test decision.
+// Meta Pixel for the four landing variants.
 !function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
     n = f.fbq = function () {
@@ -17,7 +17,7 @@
 }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
 
 fbq("init", "26550109041292967");
-window.__trackLandingPageView();
+fbq("track", "PageView");
 
 document.querySelectorAll(".registerBtn").forEach(function (button) {
     button.addEventListener("click", function () {
